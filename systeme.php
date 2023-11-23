@@ -35,10 +35,29 @@ class systeme{
 
 function start_game() {
     global $character_id, $monster_id;
-    // Logique pour commencer le jeu avec le personnage sélectionné
-    // Sélection de la première room, énigme, marchand, etc.
-}
+    $stmt = $this->connexion->prepare("SELECT * FROM rooms ORDER BY RAND() LIMIT 1");
+    $stmt->execute();
+    $room = $stmt->fetch();
 
+    if ($room) {
+        $message = "You enter room {$room['id']}. ";
+        if ($room['special']) {
+            $message .= "It's a special room. ";
+        }
+        if ($room['puzzle']) {
+            $message .= "Puzzle: {$room['puzzle']}. ";
+        }
+        if ($room['trap']) {
+            $message .= "Trap: {$room['trap']}. ";
+        }
+        if ($room['merchant']) {
+            $message .= "Merchant: {$room['merchant']}. ";
+        }
+        echo $message;
+    } else {
+        echo "You enter a room but it's empty. You can rest for a while.";
+    }
+}
 function combat() {
     global $character_id, $monster_id;
     // Logique pour gérer le combat avec le monstre
@@ -63,7 +82,8 @@ $systeme = new Systeme($connexion);
 
 // Example of game flow (very simplified)
 $systeme->select_character();
-// $systeme->start_game();
+$systeme->start_game();
+
 // $systeme->combat();
 // $systeme->loot();
 // $systeme->save_progress();
