@@ -94,6 +94,6 @@ class Game {
 }
 
 // Create a new Database instance
-$db = new Database();
+$db = new Database($connexion);
 $game = new Game($gameId, $character, $db, $combat, $loot); // Replace $gameId with the actual game ID
 $game->play();
