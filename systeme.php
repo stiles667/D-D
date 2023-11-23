@@ -35,12 +35,21 @@ class systeme{
 
 function start_game() {
     global $character_id, $monster_id;
+
+    // Fetch character data
+    $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
+    $stmt->execute([$character_id]);
+    $character = $stmt->fetch();
+
+    // Fetch a random room
     $stmt = $this->connexion->prepare("SELECT * FROM rooms ORDER BY RAND() LIMIT 1");
     $stmt->execute();
     $room = $stmt->fetch();
 
     if ($room) {
-        $message = "You enter room {$room['id']}. ";
+        // Display character name and characteristics
+        $message = "{$character['name']} (HP: {$character['hp']}, AP: {$character['ap']}, DP: {$character['dp']}) enters room {$room['id']}. ";
+
         if ($room['special']) {
             $message .= "It's a special room. ";
         }
@@ -55,7 +64,7 @@ function start_game() {
         }
         echo $message;
     } else {
-        echo "You enter a room but it's empty. You can rest for a while.";
+        echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
     }
 }
 function combat() {
