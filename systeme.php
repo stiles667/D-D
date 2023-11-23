@@ -4,28 +4,29 @@ include 'charactere.php'; // Inclure le fichier de classe Character
 
 class systeme{
     private $connexion;
+    public $character;
+
 
     function __construct($connexion) {
         $this->connexion = $connexion;
+        $this->character = new Character();
     }
 
     function select_character() {
-        global $character_id, $connexion;
-    
         // Fetch all characters from the database
-        $stmt = $connexion->prepare("SELECT * FROM characters");
+        $stmt = $this->connexion->prepare("SELECT * FROM characters");
         $stmt->execute();
         $characters = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         // Display all characters and let the user select one
         echo "Please select a character:\n";
         foreach ($characters as $index => $character) {
             echo ($index + 1) . ". " . $character['name'] . "\n";
         }
-    
+
         $choice = trim(fgets(STDIN)) - 1;
         if (isset($characters[$choice])) {
-            $character_id = $characters[$choice]['id'];
+            $this->character->id = $characters[$choice]['id'];
             echo "You have selected " . $characters[$choice]['name'] . ".\n";
         } else {
             echo "Invalid choice. Please try again.\n";
@@ -34,12 +35,15 @@ class systeme{
     }
 
     function start_game() {
-        global $character_id;
     
         // Fetch character data
         $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
-        $stmt->execute([$character_id]);
+        $stmt->execute([$this->character->id]);
         $character = $stmt->fetch();
+        if (!$character) {
+            echo "No character found.\n";
+            return;
+        }
     
         while (true) {
             // Fetch a random room
@@ -70,12 +74,20 @@ class systeme{
                         // Add points to a random attribute
                         $attribute = array_rand(['hp', 'ap', 'dp']);
                         $character[$attribute] += 10;
+                    
+                        // Update the character's attribute in the database
+                        $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
+                        $stmt->execute([$character[$attribute], $this->character->id]);
                     } else {
                         echo "Wrong answer! You lose points.\n";
                         // Subtract points from a random attribute
                         $attribute = array_rand(['hp', 'ap', 'dp']);
                         $character[$attribute] -= 10;
-    
+                    
+                        // Update the character's attribute in the database
+                        $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
+                        $stmt->execute([$character[$attribute], $this->character->id]);
+                    
                         // Check if the character's HP is 0 or less
                         if ($character['hp'] <= 0) {
                             echo "{$character['name']} has died.";
@@ -107,12 +119,12 @@ class systeme{
         }
     }
 function combat() {
-    global $character_id, $monster_id;
+   
 
     // Fetch character data
     $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
-    $stmt->execute([$character_id]);
-    $character = $stmt->fetch();
+        $stmt->execute([$this->character->id]);
+        $character = $stmt->fetch();
 
     // Fetch a random monster
     $stmt = $this->connexion->prepare("SELECT * FROM monsters ORDER BY RAND() LIMIT 1");
@@ -192,5 +204,4 @@ $systeme->combat();
 
 // $connexion = null; // Close the database connection
 ?>
-
 
