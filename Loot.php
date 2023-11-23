@@ -8,11 +8,38 @@ class Loot {
         $this->cursedItems = $cursedItems;
     }
 
+    
     public function getMagicalItem() {
-        // Code to get a magical item from the loot
+        // Check if there are any magical items in the loot
+        if (count($this->magicalItems) > 0) {
+            // Select a random magical item
+            $itemIndex = array_rand($this->magicalItems);
+            $item = $this->magicalItems[$itemIndex];
+    
+            // Remove the item from the loot
+            unset($this->magicalItems[$itemIndex]);
+    
+            return $item;
+        } else {
+            echo "There are no magical items in the loot.";
+            return null;
+        }
     }
-
+    
     public function getCursedItem() {
-        // Code to get a cursed item from the loot
+        // Check if there are any cursed items in the loot
+        if (count($this->cursedItems) > 0) {
+            // Select a random cursed item
+            $itemIndex = array_rand($this->cursedItems);
+            $item = $this->cursedItems[$itemIndex];
+    
+            // Remove the item from the loot
+            unset($this->cursedItems[$itemIndex]);
+    
+            return $item;
+        } else {
+            echo "There are no cursed items in the loot.";
+            return null;
+        }
     }
 }
