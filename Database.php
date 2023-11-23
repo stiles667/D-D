@@ -4,8 +4,8 @@ include 'config.php';
 class Database {
     private $connexion;
 
-    public function __construct() {
-        $this-> $connexion = new PDO("mysql:host=$hote;dbname=$nomDeLaBase", $utilisateur, $motDePasse);
+    public function __construct($pdo) {
+        $this->connexion = $pdo;
     }
 
     public function saveCharacter($character) {
@@ -53,5 +53,6 @@ class Database {
         $stmt->execute(['id' => $monsterId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    
 }
+$db = new Database($connexion);
+?>
