@@ -38,5 +38,6 @@ class Room {
         if (!$this->isSpecial && !$this->puzzle && !$this->trap && !$this->merchant) {
             echo "You've entered a room with a monster!\n";
         }
+        
     }
 }
