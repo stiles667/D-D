@@ -1,13 +1,14 @@
 <?php
 include 'config.php';
-include 'character.php';
+include 'charactere.php';
 include 'room.php';
 include 'combat.php';
 include 'loot.php';
+include 'database.php';
 class Game {
     protected $id;
     protected $character;
-    
+    protected $connexion;
     protected $combat;
     protected $loot;
 
@@ -63,24 +64,36 @@ class Game {
             }
         }
     }
+    public function play() {
+        // Start the game
+        $this->startGame();
+
+        // While the game is not over
+        while (!$this->isGameOver()) {
+            // Explore the current room
+            $this->room->exploreRoom();
+
+            // If there is a monster in the room, start a combat
+            if ($this->room->hasMonster()) {
+                $this->combat->fight();
+
+                // If the character won the combat, loot the monster
+                if ($this->combat->determineWinner($this->loot) == $this->character) {
+                    $this->character->gainExperience(100); // Gain 100 experience points
+                    $this->character->equipWeapon($this->loot->getMagicalItem());
+                }
+            }
+
+            // Move to the next room
+            $this->room = $this->room->getNextRoom();
+        }
+
+        // End the game
+        $this->endGame();
+    }
 }
+
 // Create a new Database instance
-$db = new Database($config);
-
-// Get the character, room, combat, and loot information from the database
-$characterData = $db->getCharacterData($characterId); // Replace $characterId with the actual character ID
-$roomData = $db->getRoomData($roomId); // Replace $roomId with the actual room ID
-$combatData = $db->getCombatData($combatId); // Replace $combatId with the actual combat ID
-$lootData = $db->getLootData($lootId); // Replace $lootId with the actual loot ID
-
-// Create new instances of Character, Room, Combat, and Loot
-$character = new Character($characterData);
-$room = new Room($roomData);
-$combat = new Combat($combatData);
-$loot = new Loot($lootData);
-
-// Create a new Game instance
-$game = new Game($gameId, $character, $room, $combat, $loot); // Replace $gameId with the actual game ID
-
-// Start the game
-$game->startGame();
+$db = new Database();
+$game = new Game($gameId, $character, $db, $combat, $loot); // Replace $gameId with the actual game ID
+$game->play();

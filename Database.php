@@ -2,10 +2,10 @@
 include 'config.php';
 
 class Database {
-    private $connection;
+    private $connexion;
 
     public function __construct() {
-        $this->connection = $GLOBALS['connexion'];
+        $this-> $connexion = new PDO("mysql:host=$hote;dbname=$nomDeLaBase", $utilisateur, $motDePasse);
     }
 
     public function saveCharacter($character) {
@@ -13,7 +13,7 @@ class Database {
     }
 
     public function loadCharacter($characterId) {
-        $stmt = $this->connection->prepare("SELECT * FROM characters WHERE id = :id");
+        $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = :id");
         $stmt->execute(['id' => $characterId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -23,7 +23,7 @@ class Database {
     }
 
     public function loadRoom($roomId) {
-        $stmt = $this->connection->prepare("SELECT * FROM rooms WHERE id = :id");
+        $stmt = $this->connexion->prepare("SELECT * FROM rooms WHERE id = :id");
         $stmt->execute(['id' => $roomId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -33,7 +33,7 @@ class Database {
     }
 
     public function loadCombat($combatId) {
-        $stmt = $this->connection->prepare("SELECT * FROM combats WHERE id = :id");
+        $stmt = $this->connexion->prepare("SELECT * FROM combats WHERE id = :id");
         $stmt->execute(['id' => $combatId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -43,14 +43,15 @@ class Database {
     }
 
     public function loadLoot($lootId) {
-        $stmt = $this->connection->prepare("SELECT * FROM loots WHERE id = :id");
+        $stmt = $this->connexion->prepare("SELECT * FROM loots WHERE id = :id");
         $stmt->execute(['id' => $lootId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function loadMonster($monsterId) {
-        $stmt = $this->connection->prepare("SELECT * FROM monsters WHERE id = :id");
+        $stmt = $this->connexion->prepare("SELECT * FROM monsters WHERE id = :id");
         $stmt->execute(['id' => $monsterId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 }
