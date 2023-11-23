@@ -44,14 +44,14 @@ function save_progress() {
 // Create a new Systeme instance
 $systeme = new Systeme($connexion);
 
-// Exemple de flux du jeu (très simplifié)
-select_character();
-start_game();
-combat();
-loot();
-save_progress();
+// Example of game flow (very simplified)
+$systeme->select_character();
+$systeme->start_game();
+$systeme->combat();
+$systeme->loot();
+$systeme->save_progress();
 
-$conn->close(); // Fermer la connexion à la base de données
+$connexion = null; // Close the database connection
 ?>
 
 
