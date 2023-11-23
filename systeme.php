@@ -58,41 +58,45 @@ class systeme{
                 // Check if the room has a puzzle
                 if ($room['puzzle']) {
                     // Fetch the puzzle question and choices
-                    $stmt = $this->connexion->prepare("SELECT question, choice1, choice2, choice3, correct_choice FROM puzzles WHERE id = ?");
+                    $stmt = $this->connexion->prepare("SELECT question, choice1, choice2, choice3, answer FROM puzzles WHERE id = ?");
                     $stmt->execute([$room['puzzle']]);
                     $puzzle = $stmt->fetch();
     
-                    echo "This room has a puzzle: {$puzzle['question']}\n";
-                    echo "1: {$puzzle['choice1']}\n";
-                    echo "2: {$puzzle['choice2']}\n";
-                    echo "3: {$puzzle['choice3']}\n";
+                    if ($puzzle) {
+                        echo "This room has a puzzle: {$puzzle['question']}\n";
+                        echo "1: {$puzzle['choice1']}\n";
+                        echo "2: {$puzzle['choice2']}\n";
+                        echo "3: {$puzzle['choice3']}\n";
     
-                    $answer = readline("Enter your answer (1, 2, or 3): ");
+                        $answer = readline("Enter your answer (1, 2, or 3): ");
     
-                    if ($answer == $puzzle['correct_choice']) {
-                        echo "Correct answer! You gain points.\n";
-                        // Add points to a random attribute
-                        $attribute = array_rand(['hp', 'ap', 'dp']);
-                        $character[$attribute] += 10;
-                    
-                        // Update the character's attribute in the database
-                        $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                        $stmt->execute([$character[$attribute], $this->character->id]);
-                    } else {
-                        echo "Wrong answer! You lose points.\n";
-                        // Subtract points from a random attribute
-                        $attribute = array_rand(['hp', 'ap', 'dp']);
-                        $character[$attribute] -= 10;
-                    
-                        // Update the character's attribute in the database
-                        $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                        $stmt->execute([$character[$attribute], $this->character->id]);
-                    
-                        // Check if the character's HP is 0 or less
-                        if ($character['hp'] <= 0) {
-                            echo "{$character['name']} has died.";
-                            break;
+                        if ($answer == $puzzle['answer']) {
+                            echo "Correct answer! You gain points.\n";
+                            // Add points to a random attribute
+                            $attribute = array_rand(['hp', 'ap', 'dp']);
+                            $character[$attribute] += 10;
+                        
+                            // Update the character's attribute in the database
+                            $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
+                            $stmt->execute([$character[$attribute], $this->character->id]);
+                        } else {
+                            echo "Wrong answer! You lose points.\n";
+                            // Subtract points from a random attribute
+                            $attribute = array_rand(['hp', 'ap', 'dp']);
+                            $character[$attribute] -= 10;
+                        
+                            // Update the character's attribute in the database
+                            $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
+                            $stmt->execute([$character[$attribute], $this->character->id]);
+                        
+                            // Check if the character's HP is 0 or less
+                            if ($character['hp'] <= 0) {
+                                echo "{$character['name']} has died.";
+                                break;
+                            }
                         }
+                    } else {
+                        echo "No puzzle found in this room.\n";
                     }
                 }
     
