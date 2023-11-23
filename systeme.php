@@ -2,6 +2,7 @@
 include 'config.php'; // Inclure le fichier de configuration
 include 'charactere.php'; // Inclure le fichier de classe Character
 include 'systeme.php'; // Inclure le fichier de classe Systeme
+class systeme{
 function select_character() {
     global $character_id;
     // Logique pour permettre à l'utilisateur de sélectionner un personnage
@@ -32,6 +33,7 @@ function save_progress() {
     global $character_id;
     // Logique pour sauvegarder la progression du personnage dans la base de données
 }
+}
 
 
 // Exemple de flux du jeu (très simplifié)
@@ -44,4 +46,4 @@ save_progress();
 $conn->close(); // Fermer la connexion à la base de données
 ?>
 
-?>
+
