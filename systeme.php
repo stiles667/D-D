@@ -99,6 +99,8 @@ function combat() {
     $monster = $stmt->fetch();
 
     if ($monster) {
+        echo "A {$monster['name']} appears and attacks you!";
+
         // Loop until someone dies
         while ($character['hp'] > 0 && $monster['hp'] > 0) {
             // Get user action
