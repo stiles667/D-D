@@ -1,8 +1,14 @@
 <?php
 include 'config.php'; // Inclure le fichier de configuration
 include 'charactere.php'; // Inclure le fichier de classe Character
-include 'systeme.php'; // Inclure le fichier de classe Systeme
+
 class systeme{
+    private $connexion;
+
+    function __construct($connexion) {
+        $this->connexion = $connexion;
+    }
+
 function select_character() {
     global $character_id;
     // Logique pour permettre à l'utilisateur de sélectionner un personnage
@@ -35,6 +41,8 @@ function save_progress() {
 }
 }
 
+// Create a new Systeme instance
+$systeme = new Systeme($connexion);
 
 // Exemple de flux du jeu (très simplifié)
 select_character();
