@@ -33,40 +33,58 @@ class systeme{
         }
     }
 
-function start_game() {
-    global $character_id, $monster_id;
-
-    // Fetch character data
-    $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
-    $stmt->execute([$character_id]);
-    $character = $stmt->fetch();
-
-    // Fetch a random room
-    $stmt = $this->connexion->prepare("SELECT * FROM rooms ORDER BY RAND() LIMIT 1");
-    $stmt->execute();
-    $room = $stmt->fetch();
-
-    if ($room) {
-        // Display character name and characteristics
-        $message = "{$character['name']} (HP: {$character['hp']}, AP: {$character['ap']}, DP: {$character['dp']}) enters room {$room['id']}. ";
-
-        if ($room['special']) {
-            $message .= "It's a special room. ";
+    function start_game() {
+        global $character_id, $monster_id;
+    
+        // Fetch character data
+        $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
+        $stmt->execute([$character_id]);
+        $character = $stmt->fetch();
+    
+        // Fetch a random room
+        $stmt = $this->connexion->prepare("SELECT * FROM rooms ORDER BY RAND() LIMIT 1");
+        $stmt->execute();
+        $room = $stmt->fetch();
+    
+        if ($room) {
+            // Display character name and characteristics
+            $message = "{$character['name']} enters a level {$room['id']} dungeon room. ";
+    
+            if ($room['special']) {
+                $message .= "It's a special room. ";
+            }
+            if ($room['puzzle']) {
+                $message .= "{$character['name']} encounters a puzzle: {$room['puzzle']}. ";
+                echo $message;
+                echo "Do you want to solve the puzzle? (yes/no)\n";
+                $choice = trim(fgets(STDIN));
+                if ($choice == 'yes') {
+                    echo "{$character['name']} has solved the puzzle.\n";
+                } else {
+                    echo "Game over.\n";
+                    exit;
+                }
+            }
+            if ($room['trap']) {
+                $message .= "{$character['name']} encounters a trap: {$room['trap']}. ";
+                echo $message;
+                echo "Do you want to disarm the trap? (yes/no)\n";
+                $choice = trim(fgets(STDIN));
+                if ($choice == 'yes') {
+                    echo "{$character['name']} has disarmed the trap.\n";
+                } else {
+                    echo "Game over.\n";
+                    exit;
+                }
+            }
+            if ($room['merchant']) {
+                $message .= "{$character['name']} encounters a merchant: {$room['merchant']}. ";
+                echo $message;
+            }
+        } else {
+            echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
         }
-        if ($room['puzzle']) {
-            $message .= "Puzzle: {$room['puzzle']}. ";
-        }
-        if ($room['trap']) {
-            $message .= "Trap: {$room['trap']}. ";
-        }
-        if ($room['merchant']) {
-            $message .= "Merchant: {$room['merchant']}. ";
-        }
-        echo $message;
-    } else {
-        echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
     }
-}
 function combat() {
     global $character_id, $monster_id;
     // Logique pour gérer le combat avec le monstre
