@@ -6,14 +6,18 @@ class Character {
     private $dp;
     private $experience;
     private $level;
+    
 
-    public function __construct($name, $hp, $ap, $dp, $experience, $level) {
+    private $inventaire;
+
+    public function __construct($name, $hp, $ap, $dp, $experience, $level, $inventaire) {
         $this->name = $name;
         $this->hp = $hp;
         $this->ap = $ap;
         $this->dp = $dp;
         $this->experience = $experience;
         $this->level = $level;
+        $this->inventaire = $inventaire;
     }
     
     public function getHp() {
@@ -23,6 +27,7 @@ class Character {
     public function setHp($hp) {
         $this->hp = $hp;
     }
+
 
     public function equipWeapon($weapon) {
         // Check if character level is high enough to equip the weapon
@@ -50,5 +55,16 @@ class Character {
         $this->ap += 5;  // Increase AP by 5
         $this->dp += 5;  // Increase DP by 5
         echo "You leveled up! Your new level is " . $this->level;
+    }
+    public function getInventaire() {
+        return $this->inventaire;
+    }
+
+    public function setInventaire($inventaire) {
+        $this->inventaire = $inventaire;
+    }
+
+    public function addToInventaire($item) {
+        $this->inventaire[] = $item;
     }
 }

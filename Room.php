@@ -14,6 +14,18 @@ class Room {
         $this->merchant = $merchant;
     }
 
+    public function isSpecial() {
+        return $this->isSpecial;
+    }
+    public function getPuzzle() {
+        return $this->puzzle;
+    }
+    public function getTrap() {
+        return $this->trap;
+    }
+    public function getMerchant() {
+        return $this->merchant;
+    }
     public function exitRoom() {
         // Code to exit the room
     }
@@ -39,4 +51,28 @@ class Room {
             echo "You've entered a room with a monster!\n";
         }
     }
+    public function SpecialRoom() {
+        //the puzzle
+        if ($this->isSpecial) {
+            echo "You've entered a special room!\n";
+
+            if ($this->puzzle) {
+                echo "There's a puzzle here: " . $this->puzzle . "\n";
+            }
+            if ($this->trap) {
+                echo "". $this->trap .
+                "\n";
+
+            }}
+            if ($this->merchant) {
+                echo "". $this->merchant .
+                "\n";
+            }
+            if (!$this->isSpecial && !$this->puzzle && !$this->trap) {
+                echo "You've entered a room with a monster!\n";
+                
+            }
+            }
+
+   
 }
