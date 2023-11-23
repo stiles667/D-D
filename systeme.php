@@ -34,55 +34,76 @@ class systeme{
     }
 
     function start_game() {
-        global $character_id, $monster_id;
+        global $character_id;
     
         // Fetch character data
         $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
         $stmt->execute([$character_id]);
         $character = $stmt->fetch();
     
-        // Fetch a random room
-        $stmt = $this->connexion->prepare("SELECT * FROM rooms ORDER BY RAND() LIMIT 1");
-        $stmt->execute();
-        $room = $stmt->fetch();
+        while (true) {
+            // Fetch a random room
+            $stmt = $this->connexion->prepare("SELECT * FROM rooms WHERE merchant IS NULL ORDER BY RAND() LIMIT 1");
+            $stmt->execute();
+            $room = $stmt->fetch();
     
-        if ($room) {
-            // Display character name and characteristics
-            $message = "{$character['name']} enters a level {$room['id']} dungeon room. ";
+            if ($room) {
+                // Display character name and characteristics
+                echo "{$character['name']} (HP: {$character['hp']}, AP: {$character['ap']}, DP: {$character['dp']}) enters room {$room['id']}. ";
     
-            if ($room['special']) {
-                $message .= "It's a special room. ";
-            }
-            if ($room['puzzle']) {
-                $message .= "{$character['name']} encounters a puzzle: {$room['puzzle']}. ";
-                echo $message;
-                echo "Do you want to solve the puzzle? (yes/no)\n";
-                $choice = trim(fgets(STDIN));
-                if ($choice == 'yes') {
-                    echo "{$character['name']} has solved the puzzle.\n";
-                } else {
-                    echo "Game over.\n";
-                    exit;
+                // Check if the room has a puzzle
+                if ($room['puzzle']) {
+                    // Fetch the puzzle question and choices
+                    $stmt = $this->connexion->prepare("SELECT question, choice1, choice2, choice3, correct_choice FROM puzzles WHERE id = ?");
+                    $stmt->execute([$room['puzzle']]);
+                    $puzzle = $stmt->fetch();
+    
+                    echo "This room has a puzzle: {$puzzle['question']}\n";
+                    echo "1: {$puzzle['choice1']}\n";
+                    echo "2: {$puzzle['choice2']}\n";
+                    echo "3: {$puzzle['choice3']}\n";
+    
+                    $answer = readline("Enter your answer (1, 2, or 3): ");
+    
+                    if ($answer == $puzzle['correct_choice']) {
+                        echo "Correct answer! You gain points.\n";
+                        // Add points to a random attribute
+                        $attribute = array_rand(['hp', 'ap', 'dp']);
+                        $character[$attribute] += 10;
+                    } else {
+                        echo "Wrong answer! You lose points.\n";
+                        // Subtract points from a random attribute
+                        $attribute = array_rand(['hp', 'ap', 'dp']);
+                        $character[$attribute] -= 10;
+    
+                        // Check if the character's HP is 0 or less
+                        if ($character['hp'] <= 0) {
+                            echo "{$character['name']} has died.";
+                            break;
+                        }
+                    }
                 }
-            }
-            if ($room['trap']) {
-                $message .= "{$character['name']} encounters a trap: {$room['trap']}. ";
-                echo $message;
-                echo "Do you want to disarm the trap? (yes/no)\n";
-                $choice = trim(fgets(STDIN));
-                if ($choice == 'yes') {
-                    echo "{$character['name']} has disarmed the trap.\n";
-                } else {
-                    echo "Game over.\n";
-                    exit;
+    
+                // Initiate a combat if the room has no merchant and no puzzle
+                if (!$room['merchant'] && !$room['puzzle']) {
+                    $combatResult = $this->combat();
+    
+                    if ($combatResult == 'defeat') {
+                        echo "{$character['name']} is defeated and the game ends.";
+                        break;
+                    }
                 }
+            } else {
+                echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
             }
-            if ($room['merchant']) {
-                $message .= "{$character['name']} encounters a merchant: {$room['merchant']}. ";
-                echo $message;
+    
+            // Ask the player for the next action
+            $action = readline("Choose an action (1 = explore the dungeon, 2 = quit game): ");
+    
+            if ($action == 2) {
+                echo "{$character['name']} decides to quit the game.";
+                break;
             }
-        } else {
-            echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
         }
     }
 function combat() {
