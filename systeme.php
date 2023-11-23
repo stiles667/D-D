@@ -12,27 +12,12 @@ class systeme{
         $this->character = new Character();
     }
 
-    function select_character() {
-        // Fetch all characters from the database
-        $stmt = $this->connexion->prepare("SELECT * FROM characters");
-        $stmt->execute();
-        $characters = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Display all characters and let the user select one
-        echo "Please select a character:\n";
-        foreach ($characters as $index => $character) {
-            echo ($index + 1) . ". " . $character['name'] . "\n";
-        }
-
-        $choice = trim(fgets(STDIN)) - 1;
-        if (isset($characters[$choice])) {
-            $this->character->id = $characters[$choice]['id'];
-            echo "You have selected " . $characters[$choice]['name'] . ".\n";
-        } else {
-            echo "Invalid choice. Please try again.\n";
-            $this->select_character();
-        }
-    }
+function select_character() {
+    global $character_id;
+    // Logique pour permettre à l'utilisateur de sélectionner un personnage
+    // Peut-être une requête SQL pour afficher les personnages disponibles et choisir
+    // Mettre à jour $character_id avec l'ID du personnage sélectionné
+}
 
     function start_game() {
     
