@@ -1,5 +1,10 @@
 <?php
-
+include 'config.php';
+include 'character.php';
+include 'room.php';
+include 'combat.php';
+include 'loot.php';
+include 'database.php';
 class games {
     protected $id;
     protected $character_id ;
