@@ -369,7 +369,7 @@ function loot() {
             if ($magicalItem || $cursedItem) {
                 $itemAlreadyInInventory = false;
     
-                if (strpos($character['inventaire'], $magicalItem) !== false || strpos($character['inventaire'], $cursedItem) !== false) {
+                if (($magicalItem && strpos($character['inventaire'], $magicalItem) !== false) || ($cursedItem && strpos($character['inventaire'], $cursedItem) !== false)) {
                     $itemAlreadyInInventory = true;
                     echo "You already have this item in your inventory.\n";
                 }
