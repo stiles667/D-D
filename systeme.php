@@ -203,9 +203,14 @@ class systeme{
         // Update the character's attributes in the database
         $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ? WHERE id = ?");
         $stmt->execute([$character['hp'], $character['ap'], $character['dp'], $this->character->id]);
+        
+        // Check if the character's HP is 0 or less
+        if ($character['hp'] <= 0) {
+            echo "{$character['name']} has died.";
+            exit;
+        }
     }
     
-
 function loot() {
     global $character_id;
     // Logique pour générer un objet aléatoire après la victoire
