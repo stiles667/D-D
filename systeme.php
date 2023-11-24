@@ -235,6 +235,85 @@ class systeme{
         exit;
     }
 }
+function merchant() {
+    // Fetch character data
+    $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
+    $stmt->execute([$this->character->id]);
+    $character = $stmt->fetch();
+
+    // Check if the current room has a merchant
+    $stmt = $this->connexion->prepare("SELECT * FROM rooms WHERE id = ?");
+    $stmt->execute([$character['current_room']]);
+    $room = $stmt->fetch();
+
+    if ($room && $room['merchant']) {
+        echo "You encounter a merchant in this room!\n";
+        echo "Merchant: Welcome, adventurer! Would you like to trade?\n";
+
+        // Fetch available items from the merchant
+        $stmt = $this->connexion->prepare("SELECT mi.id, mi.merchant, mi.loot_id, l.magical_items, l.cursed_items, l.cursed 
+                                          FROM merchantinventory mi 
+                                          JOIN loots l ON mi.loot_id = l.id 
+                                          WHERE mi.merchant = ?");
+        $stmt->execute([$room['merchant']]);
+        $merchantItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Display available items
+        echo "Available items for trade:\n";
+        foreach ($merchantItems as $item) {
+            echo "{$item['id']}: {$item['magical_items']} - {$item['cursed_items']} (Cursed: {$item['cursed']})\n";
+        }
+
+        // Player selects an item to trade
+        $selectedItemId = readline("Enter the ID of the item you want to trade (or enter 0 to exit): ");
+        
+        if ($selectedItemId == 0) {
+            echo "Merchant: Farewell, adventurer!\n";
+            return;
+        }
+
+        // Fetch the selected item from the merchant's inventory
+        $stmt = $this->connexion->prepare("SELECT * FROM merchantinventory WHERE id = ?");
+        $stmt->execute([$selectedItemId]);
+        $selectedItem = $stmt->fetch();
+
+        if ($selectedItem) {
+            echo "Merchant: You want to trade {$selectedItem['magical_items']} - {$selectedItem['cursed_items']} (Cursed: {$selectedItem['cursed']}).\n";
+
+            // Player selects an item from their inventory to trade
+            echo "Your current inventory:\n";
+            // Display the player's inventory (you need to implement this based on your game's inventory system)
+            // For example, fetch and display items from a table like "inventory" that links character ID to item ID
+
+            // Player selects an item from their inventory to trade
+            $selectedInventoryItemId = readline("Enter the ID of the item from your inventory to trade (or enter 0 to cancel): ");
+
+            if ($selectedInventoryItemId == 0) {
+                echo "Merchant: Perhaps another time, adventurer!\n";
+                return;
+            }
+
+            // Fetch the selected item from the player's inventory
+            $stmt = $this->connexion->prepare("SELECT * FROM inventory WHERE id = ?");
+            $stmt->execute([$selectedInventoryItemId]);
+            $selectedInventoryItem = $stmt->fetch();
+
+            if ($selectedInventoryItem) {
+                // Implement the logic for item exchange based on your game's design
+                // You may need to update the inventory, character stats, and any other relevant information
+                // For example, you can update the character's inventory, remove the traded item from the player's inventory, and add the traded item to the merchant's inventory
+
+                echo "Merchant: Thank you for the trade, adventurer!\n";
+            } else {
+                echo "Merchant: I'm sorry, but that item is not available for trade.\n";
+            }
+        } else {
+            echo "Merchant: I'm sorry, but that item is not available for trade.\n";
+        }
+    } else {
+        echo "There is no merchant in this room.\n";
+    }
+}
 
     
 function loot() {
@@ -311,6 +390,7 @@ $systeme = new Systeme($connexion);
 // Example of game flow (very simplified)
 $systeme->select_character();
 $systeme->start_game();
+$systeme->merchant();
 
 // $systeme->combat();
 $systeme->loot();
