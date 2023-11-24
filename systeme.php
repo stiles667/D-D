@@ -70,25 +70,23 @@ class systeme{
             
                         $answer = readline("Enter your answer (1, 2, or 3): ");
                 
-                        if ($answer == $puzzle['answer']) {
+                        if ($answer != $puzzle['answer']) {
+                            echo "Wrong answer! You lose points.\n";
+                            $character['hp'] -= 10; // Subtract 10 from HP
+
+                            // Update the character's HP in the database
+                            $stmt = $this->connexion->prepare("UPDATE characters SET hp = ? WHERE id = ?");
+                            $stmt->execute([$character['hp'], $character['id']]);
+                        } else {
                             echo "Correct answer! You gain points.\n";
                             // Add points to a random attribute
-                            $attribute = array_rand(['hp', 'ap', 'dp']);
+                            $attribute = array_rand(['hp' => 'hp', 'ap' => 'ap', 'dp' => 'dp']);
                             $character[$attribute] += 10;
-                
+
                             // Update the character's attribute in the database
                             $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                            $stmt->execute([$character[$attribute], $this->character->id]);
-                        } else {
-                            echo "Wrong answer! You lose points.\n";
-                            // Subtract points from a random attribute
-                            $attribute = array_rand(['hp', 'ap', 'dp']);
-                            $character[$attribute] -= 10;
-                
-                            // Update the character's attribute in the database
-                            $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                            $stmt->execute([$character[$attribute], $this->character->id]);
-                
+                            $stmt->execute([$character[$attribute], $character['id']]);
+
                             // Check if the character's HP is 0 or less
                             if ($character['hp'] <= 0) {
                                 echo "{$character['name']} has died.";
@@ -122,13 +120,18 @@ class systeme{
             }
         }
     }
-function combat() {
-   
-
+  function combat() {
     // Fetch character data
     $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
-        $stmt->execute([$this->character->id]);
-        $character = $stmt->fetch();
+    $stmt->execute([$this->character->id]);
+    $character = $stmt->fetch();
+
+    // Save initial stats
+    $initialStats = [
+        'hp' => $character['hp'],
+        'ap' => $character['ap'],
+        'dp' => $character['dp']
+    ];
 
     // Fetch a random monster
     $stmt = $this->connexion->prepare("SELECT * FROM monsters ORDER BY RAND() LIMIT 1");
@@ -173,17 +176,46 @@ function combat() {
         }
 
         // Check who died
-        if ($character['hp'] <= 0)  {
+        if ($character['hp'] <= 0) {
             echo "{$character['name']} is defeated by the {$monster['name']}!";
             exit;
         } else {
             echo "{$character['name']} defeats the {$monster['name']}!";
+
+            // Add a bonus to all stats
+            $bonus = 10;
+            $character['hp'] += $bonus;
+            $character['ap'] += $bonus;
+            $character['dp'] += $bonus;
+
+            // Update the character's attributes in the database
+            $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ? WHERE id = ?");
+            $stmt->execute([$character['hp'], $character['ap'], $character['dp'], $this->character->id]);
+
+            // Display bonus message
+            echo "{$character['name']} gains a bonus of $bonus to HP, AP, and DP!";
         }
     } else {
         echo "{$character['name']} finds no monsters to fight.";
     }
+
+    // Restore initial stats for the next combat
+    $character['hp'] = $initialStats['hp'];
+    $character['ap'] = $initialStats['ap'];
+    $character['dp'] = $initialStats['dp'];
+
+    // Update the character's attributes in the database
+    $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ? WHERE id = ?");
+    $stmt->execute([$character['hp'], $character['ap'], $character['dp'], $this->character->id]);
+
+    // Check if the character's HP is 0 or less
+    if ($character['hp'] <= 0) {
+        echo "{$character['name']} has died.";
+        exit;
+    }
 }
 
+    
 function loot() {
     global $character_id;
     // Logique pour générer un objet aléatoire après la victoire
