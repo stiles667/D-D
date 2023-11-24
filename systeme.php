@@ -57,75 +57,25 @@ class systeme{
     
                 // Check if the room has a puzzle
                 if ($room['puzzle']) {
-                    // Fetch all puzzles
-                    $stmt = $this->connexion->prepare("SELECT id, question, choice1, choice2, choice3, answer FROM puzzles");
-                    $stmt->execute();
-                    $puzzles = $stmt->fetchAll();
-                
-                    // Select a random puzzle
-                    $puzzle = $puzzles[array_rand($puzzles)];
-                
-                    if ($puzzle) {
-                        echo "This room has a puzzle: {$puzzle['question']}\n";
-                        echo "1: {$puzzle['choice1']}\n";
-                        echo "2: {$puzzle['choice2']}\n";
-                        echo "3: {$puzzle['choice3']}\n";
-                
-                        $answer = readline("Enter your answer (1, 2, or 3): ");
-                
-                        if ($answer != $puzzle['answer']) {
-                            echo "Wrong answer! You lose points.\n";
-                            $character['hp'] -= 10; // Subtract 10 from HP
-
-                            // Update the character's HP in the database
-                            $stmt = $this->connexion->prepare("UPDATE characters SET hp = ? WHERE id = ?");
-                            $stmt->execute([$character['hp'], $character['id']]);
-                        } else {
-                            echo "Correct answer! You gain points.\n";
-                            // Add points to a random attribute
-                            $attribute = array_rand(['hp' => 'hp', 'ap' => 'ap', 'dp' => 'dp']);
-                            $character[$attribute] += 10;
-
-                            // Update the character's attribute in the database
-                            $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                            $stmt->execute([$character[$attribute], $character['id']]);
-
-                            // Check if the character's HP is 0 or less
-                            if ($character['hp'] <= 0) {
-                                echo "{$character['name']} has died.";
-                                break;
-                            }
-                        }
-                    } else {
-                        echo "No puzzle found in this room.\n";
-                    }
-                }
-                if ($room['trap']) {
-                    echo "This room has a trap: {$room['trap']}\n";
-                    echo "{$character['name']} fell into a trap! You lose health.\n";
-                    $character['hp'] -= 15; // Subtract 15 from HP for falling into the trap
-                
-                    // Update the character's HP in the database
-                    // $stmt = $this->connexion->prepare("UPDATE characters SET hp = ? WHERE id = ?");
-                    // $stmt->execute([$character['hp'], $character['id']]);
-                
-                    // Check if the character's HP is 0 or less
-                    if ($character['hp'] <= 0) {
-                        echo "{$character['name']} has died in a trap.";
-                        break;
-                    }
+                    // ... (existing puzzle logic)
                 }
     
-                // Initiate a combat if the room has no merchant and no puzzle
-                if (!$room['merchant'] && !$room['puzzle'] && !$room['trap']) {
+                // Check if the room has a trap
+                if ($room['trap']) {
+                    // ... (existing trap logic)
+                }
+    
+                // Check if the room has a merchant
+                if ($room['merchant']) {
+                    // Call the merchant function
+                    $this->merchant();
+                } else {
+                    // Initiate a combat if the room has no merchant, no puzzle, and no trap
                     $combatResult = $this->combat();
     
                     if ($combatResult == 'defeat') {
-                        echo "{$character['name']} est vaincu et le jeu se termine.";
+                        echo "{$character['name']} is defeated and the game ends.";
                         break;
-                    } else {
-                        // Après avoir vaincu le monstre, effectuez le loot
-                        $this->loot();
                     }
                 }
             } else {
@@ -317,66 +267,10 @@ function merchant() {
 
     
 function loot() {
-    $characterId = $this->character->id; // Récupère l'ID du personnage
-
-    // Fetch character data
-    $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
-    $stmt->execute([$characterId]);
-    $character = $stmt->fetch();
-    if (!$character) {
-        echo "No character found.\n";
-        return;
-    }
-
-    // Logique pour générer un objet aléatoire après la victoire
-    $stmt = $this->connexion->prepare("SELECT * FROM loots ORDER BY RAND() LIMIT 1");
-    $stmt->execute();
-    $randomItem = $stmt->fetch();
-
-    if ($character['hp'] > 0) {
-        if ($randomItem) {
-            $magicalItem = $randomItem['magical_items'];
-            $cursedItem = $randomItem['cursed_items'];
-    
-            if ($magicalItem) {
-                echo "You found a new magical item: $magicalItem\n";
-            } elseif ($cursedItem) {
-                echo "You found a new cursed item: $cursedItem\n";
-                echo "Warning! This item is cursed!\n";
-            } else {
-                echo "You found an empty chest. No items found.\n";
-            }
-    
-            // Vérification si le personnage possède déjà cet objet dans son inventaire
-            if ($magicalItem || $cursedItem) {
-                $itemAlreadyInInventory = false;
-    
-                if (strpos($character['inventaire'], $magicalItem) !== false || strpos($character['inventaire'], $cursedItem) !== false) {
-                    $itemAlreadyInInventory = true;
-                    echo "You already have this item in your inventory.\n";
-                }
-    
-                if (!$itemAlreadyInInventory) {
-                    $choice = readline("Do you want to add this item to your inventory? (yes/no): ");
-                    if (strtolower($choice) === 'yes') {
-                        $itemName = $magicalItem ?: $cursedItem;
-                        $character['inventaire'] .= ", $itemName";
-                        $stmt = $this->connexion->prepare("UPDATE characters SET inventaire = ? WHERE id = ?");
-                        $stmt->execute([$character['inventaire'], $characterId]);
-                        echo "You added the item: $itemName to your inventory.\n";
-                    } else {
-                        echo "You left the item.\n";
-                    }
-                }
-            }
-        } else {
-            echo "No item found.\n";
-        }
-    }
+    global $character_id;
+    // quand
     
 }
-
-
 
 function save_progress() {
     global $character_id;
@@ -393,7 +287,7 @@ $systeme->start_game();
 $systeme->merchant();
 
 // $systeme->combat();
-$systeme->loot();
+// $systeme->loot();
 // $systeme->save_progress();
 
 // $connexion = null; // Close the database connection
