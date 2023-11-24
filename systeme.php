@@ -57,17 +57,20 @@ class systeme{
     
                 // Check if the room has a puzzle
                 if ($room['puzzle']) {
-                    // Fetch the puzzle question and choices
-                    $stmt = $this->connexion->prepare("SELECT question, choice1, choice2, choice3, answer FROM puzzles WHERE id = ?");
-                    $stmt->execute([$room['puzzle']]);
-                    $puzzle = $stmt->fetch();
-            
+                    // Fetch all puzzles
+                    $stmt = $this->connexion->prepare("SELECT id, question, choice1, choice2, choice3, answer FROM puzzles");
+                    $stmt->execute();
+                    $puzzles = $stmt->fetchAll();
+                
+                    // Select a random puzzle
+                    $puzzle = $puzzles[array_rand($puzzles)];
+                
                     if ($puzzle) {
                         echo "This room has a puzzle: {$puzzle['question']}\n";
                         echo "1: {$puzzle['choice1']}\n";
                         echo "2: {$puzzle['choice2']}\n";
                         echo "3: {$puzzle['choice3']}\n";
-            
+                
                         $answer = readline("Enter your answer (1, 2, or 3): ");
                 
                         if ($answer != $puzzle['answer']) {
