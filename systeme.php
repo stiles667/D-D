@@ -12,12 +12,27 @@ class systeme{
         $this->character = new Character();
     }
 
-function select_character() {
-    global $character_id;
-    // Logique pour permettre à l'utilisateur de sélectionner un personnage
-    // Peut-être une requête SQL pour afficher les personnages disponibles et choisir
-    // Mettre à jour $character_id avec l'ID du personnage sélectionné
-}
+    function select_character() {
+        // Fetch all characters from the database
+        $stmt = $this->connexion->prepare("SELECT * FROM characters");
+        $stmt->execute();
+        $characters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Display all characters and let the user select one
+        echo "Please select a character:\n";
+        foreach ($characters as $index => $character) {
+            echo ($index + 1) . ". " . $character['name'] . "\n";
+        }
+
+        $choice = trim(fgets(STDIN)) - 1;
+        if (isset($characters[$choice])) {
+            $this->character->id = $characters[$choice]['id'];
+            echo "You have selected " . $characters[$choice]['name'] . ".\n";
+        } else {
+            echo "Invalid choice. Please try again.\n";
+            $this->select_character();
+        }
+    }
 
     function start_game() {
     
@@ -46,21 +61,21 @@ function select_character() {
                     $stmt = $this->connexion->prepare("SELECT question, choice1, choice2, choice3, answer FROM puzzles WHERE id = ?");
                     $stmt->execute([$room['puzzle']]);
                     $puzzle = $stmt->fetch();
-    
+            
                     if ($puzzle) {
                         echo "This room has a puzzle: {$puzzle['question']}\n";
                         echo "1: {$puzzle['choice1']}\n";
                         echo "2: {$puzzle['choice2']}\n";
                         echo "3: {$puzzle['choice3']}\n";
-    
+            
                         $answer = readline("Enter your answer (1, 2, or 3): ");
-    
+                
                         if ($answer == $puzzle['answer']) {
                             echo "Correct answer! You gain points.\n";
                             // Add points to a random attribute
                             $attribute = array_rand(['hp', 'ap', 'dp']);
                             $character[$attribute] += 10;
-                        
+                
                             // Update the character's attribute in the database
                             $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
                             $stmt->execute([$character[$attribute], $this->character->id]);
@@ -69,11 +84,11 @@ function select_character() {
                             // Subtract points from a random attribute
                             $attribute = array_rand(['hp', 'ap', 'dp']);
                             $character[$attribute] -= 10;
-                        
+                
                             // Update the character's attribute in the database
                             $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
                             $stmt->execute([$character[$attribute], $this->character->id]);
-                        
+                
                             // Check if the character's HP is 0 or less
                             if ($character['hp'] <= 0) {
                                 echo "{$character['name']} has died.";
@@ -101,7 +116,7 @@ function select_character() {
             // Ask the player for the next action
             $action = readline("Choose an action (1 = explore the dungeon, 2 = quit game): ");
     
-            if ($action == 2) {
+            if ($action == '2') {
                 echo "{$character['name']} decides to quit the game.";
                 break;
             }
@@ -158,8 +173,9 @@ function combat() {
         }
 
         // Check who died
-        if ($character['hp'] <= 0) {
+        if ($character['hp'] <= 0)  {
             echo "{$character['name']} is defeated by the {$monster['name']}!";
+            exit;
         } else {
             echo "{$character['name']} defeats the {$monster['name']}!";
         }
@@ -187,10 +203,9 @@ $systeme = new Systeme($connexion);
 $systeme->select_character();
 $systeme->start_game();
 
-$systeme->combat();
+// $systeme->combat();
 // $systeme->loot();
 // $systeme->save_progress();
 
 // $connexion = null; // Close the database connection
 ?>
-

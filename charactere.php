@@ -1,51 +1,65 @@
 <?php
-class character {
-    protected $id;
-    protected $name;
-    protected $hp;
-    protected $ap;
-    protected $dp;
-    protected $experience;  
-    protected $level;
-    protected $inventaire;
+class Character {
+    public $id;
+    public $name;
+    public $hp;
+    public $ap;
+    public $dp;
+    public $level;
+    public $experience;
+    public $weapon;
 
+    function equipWeapon($weapon) {
+        if ($this->level >= $weapon->minLevel) {
+            $this->weapon = $weapon;
+            $this->ap += $weapon->ap;
+        }
+    }
 
-    function __construct($id, $name, $hp, $ap, $dp, $experience, $level, $inventaire) {
-        $this->id = $id;
-        $this->name = $name;
-        $this->hp = $hp;
-        $this->ap = $ap;
-        $this->dp = $dp;
-        $this->experience = $experience;
-        $this->level = $level;
-        $this->inventaire = $inventaire;
+    function gainExperience($points) {
+        $this->experience += $points;
+        if ($this->experience >= $this->level * 100) {
+            $this->levelUp();
+        }
     }
-    public function getId() {
-        return $this->id;
-    }
-    public function getName() {
-        return $this->name;
-    }
-    public function gethp() {
-        return $this->hp;
-    }
-    public function getAp() {
-        return $this->ap;
-    }
-    public function getDp() {
-        return $this->dp;
-    }
-    public function getExperience() {
-        return $this->experience;
-    }
-    public function getLevel() {
-        return $this->level;
-    }
-    public function getInventaire() {
-        return $this->inventaire;
-    }
-    
 
+    function levelUp() {
+        $this->level++;
+        $this->hp += 10;
+        $this->ap += 5;
+        $this->dp += 5;
+    }
 }
 
+class Weapon {
+    public $name;
+    public $minLevel;
+    public $ap;
+}
+
+class Room {
+    public $id;
+    public $special;
+    public $puzzle;
+    public $trap;
+    public $merchant;
+
+    function explore($character) {
+        // Implement the logic of exploring the room
+    }
+}
+
+class SpecialRoom extends Room {
+    function solvePuzzle($character) {
+        // Implement the logic of solving the puzzle
+    }
+
+    function disarmTrap($character) {
+        // Implement the logic of disarming the trap
+    }
+
+    function tradeWithMerchant($character) {
+        // Implement the logic of trading with the merchant
+    }
+}
 ?>
