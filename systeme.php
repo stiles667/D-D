@@ -70,15 +70,13 @@ class systeme{
             
                         $answer = readline("Enter your answer (1, 2, or 3): ");
                 
-                        if ($answer == $puzzle['answer']) {
-                            echo "Correct answer! You gain points.\n";
-                            // Add points to a random attribute
-                            $attribute = array_rand(['hp', 'ap', 'dp']);
-                            $character[$attribute] += 10;
-                
-                            // Update the character's attribute in the database
-                            $stmt = $this->connexion->prepare("UPDATE characters SET $attribute = ? WHERE id = ?");
-                            $stmt->execute([$character[$attribute], $this->character->id]);
+                        if ($answer != $puzzle['answer']) {
+                            echo "Wrong answer! You lose points.\n";
+                            $character['hp'] -= 10; // Subtract 10 from HP
+
+                            // Update the character's HP in the database
+                            $stmt = $this->connexion->prepare("UPDATE characters SET hp = ? WHERE id = ?");
+                            $stmt->execute([$character['hp'], $character['id']]);
                         } else {
                             echo "Wrong answer! You lose points.\n";
                             // Subtract points from a random attribute
@@ -122,67 +120,91 @@ class systeme{
             }
         }
     }
-function combat() {
-   
-
-    // Fetch character data
-    $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
+    function combat() {
+        // Fetch character data
+        $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
         $stmt->execute([$this->character->id]);
         $character = $stmt->fetch();
-
-    // Fetch a random monster
-    $stmt = $this->connexion->prepare("SELECT * FROM monsters ORDER BY RAND() LIMIT 1");
-    $stmt->execute();
-    $monster = $stmt->fetch();
-
-    if ($monster) {
-        echo "A {$monster['name']} appears and attacks you!";
-
-        // Loop until someone dies
-        while ($character['hp'] > 0 && $monster['hp'] > 0) {
-            // Get user action
-            $action = readline("Choose an action (1 = attack, 2 = dodge, 3 = defend): ");
-
-            switch ($action) {
-                case 1: // Attack
-                    if ($character['ap'] > $monster['dp']) {
-                        $monster['hp'] -= $character['ap'];
-                        echo "{$character['name']} attacks and hits the {$monster['name']}! Monster HP: {$monster['hp']}";
-                    } else {
-                        echo "{$character['name']} attacks but is blocked by the {$monster['name']}!";
-                    }
-                    break;
-                case 2: // Dodge
-                    echo "{$character['name']} dodges the attack of the {$monster['name']}!";
-                    break;
-                case 3: // Defend
-                    if ($monster['ap'] > $character['dp']) {
-                        $character['hp'] -= $monster['ap'];
-                        echo "{$character['name']} tries to defend but is hit by the {$monster['name']}! Character HP: {$character['hp']}";
-                    } else {
-                        echo "{$character['name']} defends successfully against the attack of the {$monster['name']}!";
-                    }
-                    break;
+    
+        // Save initial stats
+        $initialStats = [
+            'hp' => $character['hp'],
+            'ap' => $character['ap'],
+            'dp' => $character['dp']
+        ];
+    
+        // Fetch a random monster
+        $stmt = $this->connexion->prepare("SELECT * FROM monsters ORDER BY RAND() LIMIT 1");
+        $stmt->execute();
+        $monster = $stmt->fetch();
+    
+        if ($monster) {
+            echo "A {$monster['name']} appears and attacks you!";
+    
+            // Loop until someone dies
+            while ($character['hp'] > 0 && $monster['hp'] > 0) {
+                // Get user action
+                $action = readline("Choose an action (1 = attack, 2 = dodge, 3 = defend): ");
+    
+                switch ($action) {
+                    case 1: // Attack
+                        if ($character['ap'] > $monster['dp']) {
+                            $monster['hp'] -= $character['ap'];
+                            echo "{$character['name']} attacks and hits the {$monster['name']}! Monster HP: {$monster['hp']}";
+                        } else {
+                            echo "{$character['name']} attacks but is blocked by the {$monster['name']}!";
+                        }
+                        break;
+                    case 2: // Dodge
+                        echo "{$character['name']} dodges the attack of the {$monster['name']}!";
+                        break;
+                    case 3: // Defend
+                        if ($monster['ap'] > $character['dp']) {
+                            $character['hp'] -= $monster['ap'];
+                            echo "{$character['name']} tries to defend but is hit by the {$monster['name']}! Character HP: {$character['hp']}";
+                        } else {
+                            echo "{$character['name']} defends successfully against the attack of the {$monster['name']}!";
+                        }
+                        break;
+                }
+    
+                // Monster attacks
+                if ($monster['hp'] > 0) {
+                    $character['hp'] -= $monster['ap'];
+                    echo "The {$monster['name']} attacks! Character HP: {$character['hp']}";
+                }
             }
-
-            // Monster attacks
-            if ($monster['hp'] > 0) {
-                $character['hp'] -= $monster['ap'];
-                echo "The {$monster['name']} attacks! Character HP: {$character['hp']}";
+    
+            // Check who died
+            if ($character['hp'] <= 0) {
+                echo "{$character['name']} is defeated by the {$monster['name']}!";
+                exit;
+            } else {
+                echo "{$character['name']} defeats the {$monster['name']}!";
+    
+                // Add a bonus to all stats
+                $character['hp'] += 10;
+                $character['ap'] += 10;
+                $character['dp'] += 10;
+    
+                // Update the character's attributes in the database
+                $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ? WHERE id = ?");
+                $stmt->execute([$character['hp'], $character['ap'], $character['dp'], $this->character->id]);
             }
-        }
-
-        // Check who died
-        if ($character['hp'] <= 0)  {
-            echo "{$character['name']} is defeated by the {$monster['name']}!";
-            exit;
         } else {
-            echo "{$character['name']} defeats the {$monster['name']}!";
+            echo "{$character['name']} finds no monsters to fight.";
         }
-    } else {
-        echo "{$character['name']} finds no monsters to fight.";
+    
+        // Restore initial stats for the next combat
+        $character['hp'] = $initialStats['hp'];
+        $character['ap'] = $initialStats['ap'];
+        $character['dp'] = $initialStats['dp'];
+    
+        // Update the character's attributes in the database
+        $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ? WHERE id = ?");
+        $stmt->execute([$character['hp'], $character['ap'], $character['dp'], $this->character->id]);
     }
-}
+    
 
 function loot() {
     global $character_id;
