@@ -140,23 +140,32 @@ class systeme{
             // Ask the player for the next action
             $action = readline("Choose an action (1 = explore the dungeon, 2 = quit game): ");
     
-            if ($action == '2') {
-                echo "{$character['name']} decides to quit the game.";
-                break;
-            }
-            if ($action != '2') {
+            if ($action == '1') {
+                // Explore the dungeon
                 if (!$room['merchant'] && !$room['puzzle'] && !$room['trap']) {
                     $combatResult = $this->combat();
     
                     if ($combatResult == 'defeat') {
-                        echo "{$character['name']} est vaincu et le jeu se termine.";
+                        echo "{$character['name']} has been defeated, and the game ends.";
                         break;
                     } else {
-                        // Après avoir vaincu le monstre, effectuez le loot
-                        $this->loot(); 
-                        
+                        // After defeating the monster, perform loot
+                        $this->loot();
                     }
                 }
+            } elseif ($action == '2') {
+                // Interact with the merchant
+                if ($room['merchant']) {
+                    $this->merchant();
+                } else {
+                    echo "There is no merchant in this room.\n";
+                }
+            } elseif ($action == '3') {
+                // Quit the game
+                echo "{$character['name']} decides to quit the game.";
+                break;
+            } else {
+                echo "Invalid choice. Please try again.\n";
             }
         }
     }
