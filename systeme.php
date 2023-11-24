@@ -84,7 +84,7 @@ class systeme{
     
                             // Check if the character's HP is 0 or less
                             if ($character['hp'] <= 0) {
-                                echo "{$character['name']} has died.";
+                                echo "{$character['name']} has died.\n";
                                 break;
                             }
                         } else {
@@ -111,7 +111,7 @@ class systeme{
                 
                     // Check if the character's HP is 0 or less
                     if ($character['hp'] <= 0) {
-                        echo "{$character['name']} has died in a trap.";
+                        echo "{$character['name']} has died in a trap.\n";
                         break;
                     }
                 }
@@ -127,7 +127,7 @@ class systeme{
                     $combatResult = $this->combat();
     
                     if ($combatResult == 'defeat') {
-                        echo "{$character['name']} est vaincu et le jeu se termine.";
+                        echo "{$character['name']} game over.\n";
                         break;
                     } else {
                         // Après avoir vaincu le monstre, effectuez le loot
@@ -135,11 +135,11 @@ class systeme{
                     }
                 
             } else {
-                echo "{$character['name']} enters a room but it's empty. They can rest for a while.";
+                echo "{$character['name']} enters a room but it's empty. They can rest for a while.\n";
             }
     
             // Ask the player for the next action
-            $action = readline("Choose an action (1 = explore the dungeon, 2 = quit game): ");
+            $action = readline("Choose an action (1 = explore the dungeon, 2 = quit game): \n");
     
             if ($action == '1') {
                 // Explore the dungeon
@@ -147,7 +147,7 @@ class systeme{
                     $combatResult = $this->combat();
     
                     if ($combatResult == 'defeat') {
-                        echo "{$character['name']} has been defeated, and the game ends.";
+                        echo "{$character['name']} has been defeated, and the game ends.\n";
                         break;
                     } else {
                         // After defeating the monster, perform loot
@@ -163,7 +163,7 @@ class systeme{
                 }
             } elseif ($action == '3') {
                 // Quit the game
-                echo "{$character['name']} decides to quit the game.";
+                echo "{$character['name']} decides to quit the game.\n";
                 break;
             } else {
                 echo "Invalid choice. Please try again.\n";
@@ -191,31 +191,31 @@ class systeme{
         $monster = $stmt->fetch();
     
         if ($monster) {
-            echo "A {$monster['name']} appears and attacks you!";
+            echo "A {$monster['name']} appears and attacks you!\n";
     
             // Loop until someone dies
             while ($character['hp'] > 0 && $monster['hp'] > 0) {
             // Get user action
-            $action = readline("Choose an action (1 = attack, 2 = dodge, 3 = defend): ");
+            $action = readline("Choose an action (1 = attack, 2 = dodge, 3 = defend): \n");
 
             switch ($action) {
                 case 1: // Attack
                     if ($character['ap'] > $monster['dp']) {
                         $monster['hp'] -= $character['ap'];
-                        echo "{$character['name']} attacks and hits the {$monster['name']}! Monster HP: {$monster['hp']}";
+                        echo "{$character['name']} attacks and hits the {$monster['name']}! Monster HP: {$monster['hp']}\n";
                     } else {
-                        echo "{$character['name']} attacks but is blocked by the {$monster['name']}!";
+                        echo "{$character['name']} attacks but is blocked by the {$monster['name']}!\n";
                     }
                     break;
                 case 2: // Dodge
-                    echo "{$character['name']} dodges the attack of the {$monster['name']}!";
+                    echo "{$character['name']} dodges the attack of the {$monster['name']}!\n";
                     break;
                 case 3: // Defend
                     if ($monster['ap'] > $character['dp']) {
                         $character['hp'] -= $monster['ap'];
-                        echo "{$character['name']} tries to defend but is hit by the {$monster['name']}! Character HP: {$character['hp']}";
+                        echo "{$character['name']} tries to defend but is hit by the {$monster['name']}! Character HP: {$character['hp']}\n";
                     } else {
-                        echo "{$character['name']} defends successfully against the attack of the {$monster['name']}!";
+                        echo "{$character['name']} defends successfully against the attack of the {$monster['name']}!\n";
                     }
                     break;
             }
@@ -223,16 +223,16 @@ class systeme{
            // Monster attacks
            if ($monster['hp'] > 0) {
             $character['hp'] -= $monster['ap'];
-            echo "The {$monster['name']} attacks! Character HP: {$character['hp']}";
+            echo "The {$monster['name']} attacks! Character HP: {$character['hp']}\n";
         }
     }
 
     // Check who died
     if ($character['hp'] <= 0) {
-        echo "{$character['name']} is defeated by the {$monster['name']}!";
+        echo "{$character['name']} is defeated by the {$monster['name']}!\n";
         exit;
     } else {
-        echo "{$character['name']} defeats the {$monster['name']}!";
+        echo "{$character['name']} defeats the {$monster['name']}! You gain experience points.\n";
 
         // Add a bonus to all stats
         $bonus = 10;
@@ -255,20 +255,20 @@ class systeme{
             $character['ap'] += 5;
             $character['dp'] += 5;
 
-            echo "{$character['name']} has leveled up to level {$character['level']}!";
+            echo "{$character['name']} has leveled up to level {$character['level']}! HP, AP, and DP increased by $bonus.\n";
         }
 
         // Update the character's attributes in the database
-        $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ?, experience = ?, level = ? WHERE id = ?");
+        $stmt = $this->connexion->prepare("UPDATE characters SET hp = ?, ap = ?, dp = ?, experience = ?, level = ? WHERE id = ? ");
         $stmt->execute([$character['hp'], $character['ap'], $character['dp'],$character['experience']
         , $character['level'], $this->character->id]);
 
         // Display bonus and XP message
-        echo "{$character['name']} gains a bonus of $bonus to HP, AP, and DP!";
-        echo "{$character['name']} gains $expGain experience points. Total XP: {$character['experience']}";
+        echo "{$character['name']} gains a bonus of $bonus to HP, AP, and DP! \n";
+        echo "{$character['name']} gains $expGain experience points. Total XP: {$character['experience']} \n";
     }
 } else {
-    echo "{$character['name']} finds no monsters to fight.";
+    echo "{$character['name']} finds no monsters to fight. \n";
 }
 
 // Restore initial stats for the next combat
@@ -291,6 +291,11 @@ function merchant() {
     $stmt = $this->connexion->prepare("SELECT * FROM characters WHERE id = ?");
     $stmt->execute([$this->character->id]);
     $character = $stmt->fetch();
+
+    if (!isset($character['current_room'])) {
+        echo "The character is not currently in any room.\n";
+        return;
+    }
 
     // Check if the current room has a merchant
     $stmt = $this->connexion->prepare("SELECT * FROM rooms WHERE id = ?");
@@ -316,7 +321,7 @@ function merchant() {
         }
 
         // Player selects an item to trade
-        $selectedItemId = readline("Enter the ID of the item you want to trade (or enter 0 to exit): ");
+        $selectedItemId = readline("Enter the ID of the item you want to trade (or enter 0 to exit): \n");
         
         if ($selectedItemId == 0) {
             echo "Merchant: Farewell, adventurer!\n";
@@ -330,30 +335,29 @@ function merchant() {
 
         if ($selectedItem) {
             echo "Merchant: You want to trade {$selectedItem['magical_items']} - {$selectedItem['cursed_items']} (Cursed: {$selectedItem['cursed']}).\n";
-
+        
+            // Display the player's inventory
+            displayPlayerInventory($this->character->id);
+        
             // Player selects an item from their inventory to trade
-            echo "Your current inventory:\n";
-            // Display the player's inventory (you need to implement this based on your game's inventory system)
-            // For example, fetch and display items from a table like "inventory" that links character ID to item ID
-
-            // Player selects an item from their inventory to trade
-            $selectedInventoryItemId = readline("Enter the ID of the item from your inventory to trade (or enter 0 to cancel): ");
-
+            $selectedInventoryItemId = readline("Enter the ID of the item from your inventory to trade (or enter 0 to cancel):\n");
+        
             if ($selectedInventoryItemId == 0) {
                 echo "Merchant: Perhaps another time, adventurer!\n";
                 return;
             }
-
+        
             // Fetch the selected item from the player's inventory
             $stmt = $this->connexion->prepare("SELECT * FROM inventory WHERE id = ?");
             $stmt->execute([$selectedInventoryItemId]);
             $selectedInventoryItem = $stmt->fetch();
-
+        
             if ($selectedInventoryItem) {
-                // Implement the logic for item exchange based on your game's design
-                // You may need to update the inventory, character stats, and any other relevant information
-                // For example, you can update the character's inventory, remove the traded item from the player's inventory, and add the traded item to the merchant's inventory
-
+                // Logic for item exchange
+                // Assuming 'inventory' table has a 'character_id' column to link items to characters
+                $stmt = $this->connexion->prepare("UPDATE inventory SET character_id = ?, merchant_id = ? WHERE id = ?");
+                $stmt->execute([$room['merchant_id'], $this->character->id, $selectedInventoryItemId]);
+        
                 echo "Merchant: Thank you for the trade, adventurer!\n";
             } else {
                 echo "Merchant: I'm sorry, but that item is not available for trade.\n";
@@ -361,11 +365,9 @@ function merchant() {
         } else {
             echo "Merchant: I'm sorry, but that item is not available for trade.\n";
         }
-    } else {
-        echo "There is no merchant in this room.\n";
     }
+        
 }
-
 function loot() {
     $characterId = $this->character->id; // Récupère l'ID du personnage
 
@@ -407,7 +409,7 @@ function loot() {
                 }
 
                 if (!$itemAlreadyInInventory) {
-                    $choice = readline("Do you want to add this item to your inventory? (yes/no): ");
+                    $choice = readline("Do you want to add this item to your inventory? (yes/no): \n");
                     if (strtolower($choice) === 'yes') {
                         $itemName = $magicalItem ?: $cursedItem;
                         $character['inventaire'] .= ", $itemName";
