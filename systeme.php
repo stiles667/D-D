@@ -71,7 +71,7 @@ class systeme{
                         echo "2: {$puzzle['choice2']}\n";
                         echo "3: {$puzzle['choice3']}\n";
                 
-                        $answer = readline("Enter your answer (1, 2, or 3) : ");
+                        $answer = readline("Enter your answer (1, 2, or 3): ");
                 
                         if ($answer != $puzzle['answer']) {
                             echo "Wrong answer! You lose points.\n";
@@ -100,9 +100,24 @@ class systeme{
                         echo "No puzzle found in this room.\n";
                     }
                 }
+                if ($room['trap']) {
+                    echo "This room has a trap: {$room['trap']}\n";
+                    echo "{$character['name']} fell into a trap! You lose health.\n";
+                    $character['hp'] -= 15; // Subtract 15 from HP for falling into the trap
+                
+                    // Update the character's HP in the database
+                    // $stmt = $this->connexion->prepare("UPDATE characters SET hp = ? WHERE id = ?");
+                    // $stmt->execute([$character['hp'], $character['id']]);
+                
+                    // Check if the character's HP is 0 or less
+                    if ($character['hp'] <= 0) {
+                        echo "{$character['name']} has died in a trap.";
+                        break;
+                    }
+                }
     
                 // Initiate a combat if the room has no merchant and no puzzle
-                if (!$room['merchant'] && !$room['puzzle']) {
+                if (!$room['merchant'] && !$room['puzzle'] && !$room['trap']) {
                     $combatResult = $this->combat();
     
                     if ($combatResult == 'defeat') {
