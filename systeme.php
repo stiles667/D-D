@@ -153,7 +153,8 @@ class systeme{
                         break;
                     } else {
                         // Après avoir vaincu le monstre, effectuez le loot
-                        $this->loot();
+                        $this->loot(); 
+                        
                     }
                 }
             }
