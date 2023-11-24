@@ -71,7 +71,7 @@ class systeme{
                         echo "2: {$puzzle['choice2']}\n";
                         echo "3: {$puzzle['choice3']}\n";
                 
-                        $answer = readline("Enter your answer (1, 2, or 3) : ");
+                        $answer = readline("Enter your answer (1, 2, or 3): ");
                 
                         if ($answer != $puzzle['answer']) {
                             echo "Wrong answer! You lose points.\n";
